@@ -1,0 +1,14 @@
+<% for(let i = 0 ; i < searchedItemsList.length ; i++){ %>
+<li class="list-group-item">
+  <div class="purchase-list">
+    <h6 class="my-0">  <%=searchedItemsList[i].productName %></h6>
+    <small class="text-muted">  Ilość sztuk: <%= searchedItemsList[i].quantity %>,
+      Cena minimalna: <%=searchedItemsList[i].minPrice %>,
+      Cena maksymalna: <%=searchedItemsList[i].maxPrice %>,
+      Stan: <%=searchedItemsList[i].state %>. </small>
+  </div>
+  <div class="purchase-list-btn">
+    <button type="button" name="button" class="btn btn-outline-secondary btn-sm">usuń</button>
+  </div>
+</li>
+<% } %>

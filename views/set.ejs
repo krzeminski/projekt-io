@@ -1,0 +1,11 @@
+<% for(let i = 0 ; i < searchedItemsList.length ; i++){ %>
+<li class="list-group-item d-flex justify-content-between lh-condensed">
+  <a href="#">
+    <div>
+      <h6 class="my-0"><%=searchedItemsList[i].productName %></h6>
+      <small class="text-muted">Brief description</small>
+    </div>
+  </a>
+  <span class="text-muted">foundProduct[i].price</span>
+</li>
+<%}%>
