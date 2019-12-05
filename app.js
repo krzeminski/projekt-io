@@ -16,8 +16,15 @@ app.use(bodyParser.json());
 
 app.get("/", function(req,res){
   res.render("search",{searchedItemsList:searchedItemsList});
-  access_token = engine.getAccessToken();
-  console.log(access_token);
+  // access_token = engine.getAccessToken().then(data => console.log(data));
+  var accessToken = engine.getAccessToken().then(res => {
+    return res;
+  })
+  .catch(err => {
+    console.log(err);
+  });
+
+  console.log(accessToken);
 
 });
 
