@@ -14,6 +14,7 @@ app.use(bodyParser.json());
 let state = "all";
 const searchedItemsList = [];
 var accessToken;
+//miejsce then opisane w 12 linijce engine.js
 engine.getAccessToken().then(function(res){accessToken=res;});
 
 var exampleLinks = ['https://api.allegro.pl/offers/listing?phrase=Samochód',
