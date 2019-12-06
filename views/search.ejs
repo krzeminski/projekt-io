@@ -42,16 +42,16 @@
 
             <input type="text" class="form-control" placeholder="Produkt" name="productName" required>
 
-            <input type="number" name="quantity" value="" placeholder="Ilość" required>
-            <input type="number" name="minPrice" value="" placeholder="Cena minimalna" required>
-            <input type="number" name="maxPrice" value="" placeholder="Cena maksymalna" required>
+            <!-- <input type="number" name="quantity" value="" placeholder="Ilość" required> -->
+            <input type="number" name="minPrice" value="" placeholder="Cena minimalna" min="0" required>
+            <input type="number" name="maxPrice" value="" placeholder="Cena maksymalna" min="0" required>
 
             <div class="input-group mb-3">
               <select class="custom-select" name="state" required>
-                <option selected disabled value="all"> Stan </option>
-                <option value="onlyNew">Nowe</option>
-                <option value="onlyUsed">Używane</option>
-                <option value="all">Wszystkie</option>
+                <option selected disabled value="Wszystkie"> Stan </option>
+                <option value="Nowe">Nowe</option>
+                <option value="Używane">Używane</option>
+                <option value="Wszystkie">Wszystkie</option>
               </select>
             </div>
 
