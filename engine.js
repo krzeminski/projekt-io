@@ -8,6 +8,8 @@ let phraseStart = "https://api.allegro.pl/offers/listing?phrase=";
 let phraseEnd =  "&sellingMode.format=BUY_NOW";
 
 //Otrzymujemy access_token do autoryzacji
+//async sprawia, ze fukcja czeka na wykonanie getToken()
+//wartosc accessToken zwracany jest w then() w app.js
 exports.getAccessToken = async function(){
 	var authUrl = "https://allegro.pl/auth/oauth/token?grant_type=client_credentials";
   // var clientId = "9ba1e6fc865c46379cb6afc1fa548b13";
@@ -15,7 +17,6 @@ exports.getAccessToken = async function(){
   // "clientId:clientSecret" zakodowane w formacie base64:
   var clientAuth = "Basic OWJhMWU2ZmM4NjVjNDYzNzljYjZhZmMxZmE1NDhiMTM6MkxSZ3Y1TTNGSVNyNzgzSW8wbjlGYnVRZGs1N0dTMTlIR1FWNFRKTXBiZmFoc0U3T2p3T3BudnkxbEc1VzBWNw==";
   var accessToken;
-
   var options = {
     url: authUrl,
     method: "POST",
@@ -24,7 +25,10 @@ exports.getAccessToken = async function(){
     }
   };
 
-  function getToken(){
+//funkcja generujaca token, ktory jest promise
+//musielismy to napisac w ten sposob, bo wystepowal problem opisany w linku nizej
+//https://stackoverflow.com/questions/14220321/how-do-i-return-the-response-from-an-asynchronous-call
+  function getToken(){	
     return new Promise(resolve => {
       request(options, function(error, response, body){
         if(error){
@@ -50,7 +54,7 @@ exports.getAccessToken = async function(){
 
 
 
-
+//zwraca linki ofert
 exports.getLinks = function(searchedProductsList){
   for(let i = 0; i < searchedProductsList.length; i++){
     if(searchedProductsList[i].minPrice>searchedProductsList[i].maxPrice){
@@ -67,7 +71,7 @@ exports.getLinks = function(searchedProductsList){
 }
 exports.getL = function(){return links;}
 
-
+//zamienia linki na liste ofert
 exports.getOffersListing = function(links, token){
   var lista;
   var options = {
@@ -85,6 +89,7 @@ exports.getOffersListing = function(links, token){
     // }
   };
 
+//wykonanie zamiany jest tutaj
   function getOneOfferListing(){
     request(options, function(error, response, body){
       if(error){
