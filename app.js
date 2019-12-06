@@ -16,10 +16,10 @@ const searchedItemsList = [];
 var accessToken;
 engine.getAccessToken().then(function(res){accessToken=res;});
 
-var exampleLinks = ['https://api.allegro.pl/offers/listing?phrase=Samochód',
-  'https://api.allegro.pl/offers/listing?phrase=Krzeslo&price.from=22&price.to=555&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50',
+var exampleLinks = ['https://api.allegro.pl/offers/listing?phrase=Samochod',
+  'https://api.allegro.pl/offers/listing?phrase=Krzeslo&price.from=22&price.to=555&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=10&parameter.11323=11323_2',
   'https://api.allegro.pl/offers/listing?phrase=Czerwona+sukienka&price.from=22&price.to=555&sort=+withDeliveryPrice&sellingMode.format=BUY_NOW&limit=50&searchMode=REGULAR',
-  'https://api.allegro.pl/offers/listing?phrase=Krzesło&price.from=22&price.to=555&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50',
+  'https://api.allegro.pl/offers/listing?phrase=Krzeslo&price.from=22&price.to=555&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50',
   'https://api.allegro.pl/offers/listing?phrase=Aparat&price.from=1&price.to=56&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50',
   'https://api.allegro.pl/offers/listing?phrase=Laptop&price.from=1&price.to=66&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50',
   'https://api.allegro.pl/offers/listing?phrase=Kamera&price.from=13&price.to=56&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50' ];
@@ -27,7 +27,7 @@ var exampleLinks = ['https://api.allegro.pl/offers/listing?phrase=Samochód',
 app.get("/", function(req,res){
   res.render("search",{searchedItemsList:searchedItemsList});
   // console.log(accessToken);
-  engine.getOffersListing(exampleLinks[1], accessToken);
+  engine.getOffersListing(exampleLinks, accessToken);
 
 
 });

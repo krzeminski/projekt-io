@@ -1,17 +1,15 @@
 //jshint esversion:6
 const request = require('request');
 var superagent = require('superagent');
+var latinize = require('latinize');
 
 const links = [];
 let phraseStart = "https://api.allegro.pl/offers/listing?phrase=";
-// let phraseEnd =  "&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50";
-let phraseEnd =  "&sellingMode.format=BUY_NOW";
+let phraseEnd =  "&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50";
 
 //Otrzymujemy access_token do autoryzacji
 exports.getAccessToken = async function(){
 	var authUrl = "https://allegro.pl/auth/oauth/token?grant_type=client_credentials";
-  // var clientId = "9ba1e6fc865c46379cb6afc1fa548b13";
-  // var clientSecret = "2LRgv5M3FISr783Io0n9FbuQdk57GS19HGQV4TJMpbfahsE7OjwOpnvy1lG5W0V7";
   // "clientId:clientSecret" zakodowane w formacie base64:
   var clientAuth = "Basic OWJhMWU2ZmM4NjVjNDYzNzljYjZhZmMxZmE1NDhiMTM6MkxSZ3Y1TTNGSVNyNzgzSW8wbjlGYnVRZGs1N0dTMTlIR1FWNFRKTXBiZmFoc0U3T2p3T3BudnkxbEc1VzBWNw==";
   var accessToken;
@@ -32,7 +30,6 @@ exports.getAccessToken = async function(){
         }else{
           if(response.statusCode === 200){
             accessToken = JSON.parse(response.body).access_token;
-            // console.log("1 " + accessToken);
             resolve(accessToken);
           }else{
             console.log(response);
@@ -52,24 +49,35 @@ exports.getAccessToken = async function(){
 
 
 exports.getLinks = function(searchedProductsList){
+	var stateFilter;
   for(let i = 0; i < searchedProductsList.length; i++){
     if(searchedProductsList[i].minPrice>searchedProductsList[i].maxPrice){
       searchedProductsList[i].maxPrice=searchedProductsList[i].minPrice;
     }
+		if(searchedProductsList.state == "Nowe"){
+			stateFilter="&11323=1";
+		}else if (searchedProductsList.state == "Używane") {
+			stateFilter="&11323=2";
+		}else{
+			stateFilter="";
+		}
     links.push(
-      phraseStart + searchedProductsList[i].productName.trim().split(' ').join('+') +
+      phraseStart + latinize(searchedProductsList[i].productName).trim().split(' ').join('+') +
       "&price.from=" + searchedProductsList[i].minPrice +
       "&price.to=" + searchedProductsList[i].maxPrice +
-      phraseEnd
+      phraseEnd + stateFilter
       );
   }
   return links;
 }
+
 exports.getL = function(){return links;}
 
 
-exports.getOffersListing = function(links, token){
-  var lista;
+exports.getOffersListing = async function(links, token){
+  var singleProductList;
+  var allProductsList;
+
   var options = {
     url: links,
     method: "GET",
@@ -77,31 +85,33 @@ exports.getOffersListing = function(links, token){
       "Accept": "application/vnd.allegro.public.v1+json",
       "content-type": "application/vnd.allegro.public.v1+json",
       "Authorization": "Bearer " + token
-    },
-    // sort:"+withDeliveryPrice",
-    // limit: "20",
-    // sellingMode:{
-    //   format:"BUY_NOW"
-    // }
+    }
   };
 
-  function getOneOfferListing(){
-    request(options, function(error, response, body){
-      if(error){
-        console.log("Error " + error);
-      }else{
-        if(response.statusCode === 200){
-          lista = JSON.parse(response.body);
-          console.log("Lista: " + lista);
-          return lista;
-        }else{
-          console.log(response);
-        }
-      }
-    });
+  function getOneOfferListing(number){
+		return new Promise(resolve => {
+			options.url = links[number];
+	    request(options, function(error, response, body){
+	      if(error){
+	        console.log(error);
+	      }else{
+	        if(response.statusCode === 200){
+	          singleProductList = JSON.parse(response.body).items.promoted;
+	          singleProductList += JSON.parse(response.body).items.regular;
+	          // console.log(lista);
+						resolve(singleProductList);
+	        }else{
+	          console.log(response);
+	        }
+	      }
+	    });
+		});
   }
 
-  lista = getOneOfferListing();
+	for(let i = 0; i<links.length; i++){
+		var lista = await getOneOfferListing(i);
+		allProductsList.push(lista);
+	}
 
-  return lista;
+  return allProductsList;
 }
