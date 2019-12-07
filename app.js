@@ -11,7 +11,12 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 app.use(bodyParser.json());
 
-const inputProductsList = [];
+const inputProductsList = [{
+  productName: "Iphone X",
+  minPrice: 2000,
+  maxPrice: 7000,
+  state: "Nowy"
+}];
 var linksList = [];
 const allProductsList = [];
 var accessToken;

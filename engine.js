@@ -80,7 +80,8 @@ exports.getL = function(){return links;}
 
 //zamienia linki na liste ofert
 exports.getOffersListing = async function(links, token, number){
-  var singleProductList;
+  var simpleProductList;
+	var listOfOffersForOneProduct = [];
 
   var options = {
     url: links[0],
@@ -100,10 +101,24 @@ exports.getOffersListing = async function(links, token, number){
 	        console.log(error);
 	      }else{
 	        if(response.statusCode === 200){
-	          singleProductList = JSON.parse(response.body).items.promoted;
-	          singleProductList += JSON.parse(response.body).items.regular;
-	          // console.log(lista);
-						resolve(singleProductList);
+	          var simpleProductList = [];
+						listOfOffersForOneProduct = JSON.parse(response.body).items.promoted;
+	          listOfOffersForOneProduct.concat(JSON.parse(response.body).items.regular);
+						// console.log(JSON.parse(response.body).items.promoted[0].seller.id);
+						console.log(listOfOffersForOneProduct.length);
+						for(let i = 0; i<listOfOffersForOneProduct.length; i++){
+							var product = {
+								id: listOfOffersForOneProduct[i].id,
+								name: listOfOffersForOneProduct[i].name,
+								seller: listOfOffersForOneProduct[i].seller.id,
+								price: listOfOffersForOneProduct[i].sellingMode.price.amount,
+								deliveryPrice: listOfOffersForOneProduct[i].delivery.lowestPrice.amount,
+								// priceWithDelivery: price + deliveryPrice
+							}
+							console.log(product);
+							simpleProductList.push(product);
+						}
+						resolve(simpleProductList);
 	        }else{
 	          console.log(response);
 	        }
@@ -112,25 +127,7 @@ exports.getOffersListing = async function(links, token, number){
 		});
   }
 
-	singleProductList = await getOneOfferListing(number);
+	var simplifiedProductList = await getOneOfferListing(number);
 
-	return singleProductList;
-}
-
-function extract(listOfOffersForOneProduct){
-	var simpleProductsList;
-
-	for(let i = 0; i<limit; i++){
-		var product = {
-			id: listOfOffersForOneProduct[i].id,
-			name: listOfOffersForOneProduct[i].name,
-			seller_id: listOfOffersForOneProduct[i].seller.id,
-			price: listOfOffersForOneProduct[i].sellingMode.price.amount,
-			deliveryPrice: listOfOffersForOneProduct[i].delivery.lowestPrice.amount,
-			priceWithDelivery: price + deliveryPrice
-		}
-		simpleProductsList.push(product);
-	}
-
-	return simpleProductsList;
+	return simplifiedProductList;
 }
