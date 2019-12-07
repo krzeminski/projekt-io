@@ -11,25 +11,19 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 app.use(bodyParser.json());
 
-let state = "all";
-const searchedItemsList = [];
+const inputProductsList = [];
+var linksList = [];
+const allProductsList = [];
 var accessToken;
+
 //miejsce then opisane w 12 linijce engine.js
 engine.getAccessToken().then(function(res){accessToken=res;});
 
-var exampleLinks = ['https://api.allegro.pl/offers/listing?phrase=Samochod',
-  'https://api.allegro.pl/offers/listing?phrase=Krzeslo&price.from=22&price.to=555&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=10&parameter.11323=11323_2',
-  'https://api.allegro.pl/offers/listing?phrase=Czerwona+sukienka&price.from=22&price.to=555&sort=+withDeliveryPrice&sellingMode.format=BUY_NOW&limit=50&searchMode=REGULAR',
-  'https://api.allegro.pl/offers/listing?phrase=Krzeslo&price.from=22&price.to=555&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50',
-  'https://api.allegro.pl/offers/listing?phrase=Aparat&price.from=1&price.to=56&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50',
-  'https://api.allegro.pl/offers/listing?phrase=Laptop&price.from=1&price.to=66&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50',
-  'https://api.allegro.pl/offers/listing?phrase=Kamera&price.from=13&price.to=56&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50' ];
 
-app.get("/", function(req,res){
-  res.render("search",{searchedItemsList:searchedItemsList});
+app.get("/", async function(req,res){
+
+  res.render("search",{searchedItemsList:inputProductsList});
   // console.log(accessToken);
-  engine.getOffersListing(exampleLinks, accessToken);
-
 
 });
 
@@ -41,15 +35,27 @@ app.post("/", function(req,res){
     state:req.body.state
   }
 
-  searchedItemsList.push(searchedProduct);
+  inputProductsList.push(searchedProduct);
   res.redirect("/");
 
 });
 
-app.get("/result", function(req,res){
-  console.log(searchedItemsList);
-  console.log(engine.getLinks(searchedItemsList));
-  console.log(engine.getL());
+
+app.get("/result", async function(req,res){
+  linksList = await engine.getLinks(inputProductsList);
+  console.log(linksList);
+
+  for(let i = 0; i<linksList.length; i++){
+    var lista;
+    lista = await engine.getOffersListing(linksList, accessToken, i);
+    // await engine.findOnlyThree();
+    console.log(lista);
+    allProductsList.push(lista);
+  }
+  // console.log(allProductsList[0][0]);
+
+
+
   res.sendFile(__dirname + "/views/results.html");
   // res.render("result", {newListItems:workItems});
 });

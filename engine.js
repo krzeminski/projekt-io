@@ -3,9 +3,10 @@ const request = require('request');
 var superagent = require('superagent');
 var latinize = require('latinize');
 
+const limit = 15;
 const links = [];
 let phraseStart = "https://api.allegro.pl/offers/listing?phrase=";
-let phraseEnd =  "&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=50";
+let phraseEnd =  "&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=" + limit;
 
 //Otrzymujemy access_token do autoryzacji
 //async sprawia, ze fukcja czeka na wykonanie getToken()
@@ -78,12 +79,11 @@ exports.getLinks = function(searchedProductsList){
 exports.getL = function(){return links;}
 
 //zamienia linki na liste ofert
-exports.getOffersListing = async function(links, token){
+exports.getOffersListing = async function(links, token, number){
   var singleProductList;
-  var allProductsList;
 
   var options = {
-    url: links,
+    url: links[0],
     method: "GET",
     headers: {
       "Accept": "application/vnd.allegro.public.v1+json",
@@ -112,10 +112,25 @@ exports.getOffersListing = async function(links, token){
 		});
   }
 
-	for(let i = 0; i<links.length; i++){
-		var lista = await getOneOfferListing(i);
-		allProductsList.push(lista);
+	singleProductList = await getOneOfferListing(number);
+
+	return singleProductList;
+}
+
+function extract(listOfOffersForOneProduct){
+	var simpleProductsList;
+
+	for(let i = 0; i<limit; i++){
+		var product = {
+			id: listOfOffersForOneProduct[i].id,
+			name: listOfOffersForOneProduct[i].name,
+			seller_id: listOfOffersForOneProduct[i].seller.id,
+			price: listOfOffersForOneProduct[i].sellingMode.price.amount,
+			deliveryPrice: listOfOffersForOneProduct[i].delivery.lowestPrice.amount,
+			priceWithDelivery: price + deliveryPrice
+		}
+		simpleProductsList.push(product);
 	}
 
-  return allProductsList;
+	return simpleProductsList;
 }
