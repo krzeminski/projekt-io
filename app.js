@@ -15,7 +15,12 @@ const inputProductsList = [{
   productName: "Iphone X",
   minPrice: 2000,
   maxPrice: 7000,
-  state: "Nowy"
+  state: "Nowe"
+},{
+  productName: "Iphone XS",
+  minPrice: 1000,
+  maxPrice: 7000,
+  state: "Nowe"
 }];
 var linksList = [];
 const allProductsList = [];
@@ -26,6 +31,7 @@ engine.getAccessToken().then(function(res){accessToken=res;});
 
 
 app.get("/", async function(req,res){
+  // engine.getSellerRating("39446477", accessToken).then(function(res){console.log(res);});
 
   res.render("search",{searchedItemsList:inputProductsList});
   // console.log(accessToken);
@@ -48,18 +54,17 @@ app.post("/", function(req,res){
 
 app.get("/result", async function(req,res){
   linksList = await engine.getLinks(inputProductsList);
-  console.log(linksList);
 
   for(let i = 0; i<linksList.length; i++){
     var lista;
     lista = await engine.getOffersListing(linksList, accessToken, i);
-    // await engine.findOnlyThree();
-    console.log(lista);
+    // const unique = new Set();
     allProductsList.push(lista);
   }
-  // console.log(allProductsList[0][0]);
 
-
+  // console.log(allProductsList);
+  // console.log(typeof(allProductsList));
+  console.log(engine.getDuplicatedSeller(allProductsList));
 
   res.sendFile(__dirname + "/views/results.html");
   // res.render("result", {newListItems:workItems});

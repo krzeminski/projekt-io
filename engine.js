@@ -3,7 +3,8 @@ const request = require('request');
 var superagent = require('superagent');
 var latinize = require('latinize');
 
-const limit = 15;
+const chosenRating = 4;
+const limit = 50;
 const links = [];
 let phraseStart = "https://api.allegro.pl/offers/listing?phrase=";
 let phraseEnd =  "&sellingMode.format=BUY_NOW&searchMode=REGULAR&sort=+withDeliveryPrice&limit=" + limit;
@@ -37,7 +38,7 @@ exports.getAccessToken = async function(){
             accessToken = JSON.parse(response.body).access_token;
             resolve(accessToken);
           }else{
-            console.log(response);
+            console.log(response.statusCode);
           }
         }
       });
@@ -80,8 +81,6 @@ exports.getL = function(){return links;}
 
 //zamienia linki na liste ofert
 exports.getOffersListing = async function(links, token, number){
-  var simpleProductList;
-	var listOfOffersForOneProduct = [];
 
   var options = {
     url: links[0],
@@ -102,32 +101,83 @@ exports.getOffersListing = async function(links, token, number){
 	      }else{
 	        if(response.statusCode === 200){
 	          var simpleProductList = [];
+						var listOfOffersForOneProduct = [];
 						listOfOffersForOneProduct = JSON.parse(response.body).items.promoted;
 	          listOfOffersForOneProduct.concat(JSON.parse(response.body).items.regular);
-						// console.log(JSON.parse(response.body).items.promoted[0].seller.id);
-						console.log(listOfOffersForOneProduct.length);
+
 						for(let i = 0; i<listOfOffersForOneProduct.length; i++){
 							var product = {
+								flag: number,
 								id: listOfOffersForOneProduct[i].id,
 								name: listOfOffersForOneProduct[i].name,
 								seller: listOfOffersForOneProduct[i].seller.id,
-								price: listOfOffersForOneProduct[i].sellingMode.price.amount,
-								deliveryPrice: listOfOffersForOneProduct[i].delivery.lowestPrice.amount,
-								// priceWithDelivery: price + deliveryPrice
+								price: Number(listOfOffersForOneProduct[i].sellingMode.price.amount),
+								deliveryPrice: Number(listOfOffersForOneProduct[i].delivery.lowestPrice.amount),
+								// priceWithDelivery: Number(listOfOffersForOneProduct[i].sellingMode.price.amount) + Number(listOfOffersForOneProduct[i].delivery.lowestPrice.amount)
 							}
-							console.log(product);
-							simpleProductList.push(product);
+								simpleProductList.push(product);
 						}
+						simpleProductList.sort((a, b) => ((a.price + a.deliveryPrice) > (b.price + b.deliveryPrice)) ? 1 : -1);
 						resolve(simpleProductList);
 	        }else{
-	          console.log(response);
+	          console.log(response.statusCode);
 	        }
 	      }
 	    });
 		});
   }
 
-	var simplifiedProductList = await getOneOfferListing(number);
+	return await getOneOfferListing(number);
+}
 
-	return simplifiedProductList;
+async function getSellerRating(sellerID, token){
+	var url = "https://api.allegro.pl/users/" + sellerID + "/ratings-summary";
+  var options = {
+    url: url,
+    method: "GET",
+    headers: {
+      "Authorization": "Bearer " + token
+    }
+  };
+
+  function getSellerReputation(){
+    return new Promise(resolve => {
+      request(options, function(error, response, body){
+        if(error){
+          console.log(error);
+        }else{
+          if(response.statusCode === 200){
+						var rating = JSON.parse(response.body).recommendedPercentage;
+						rating = rating.split(',').join('.') * 0.05 ;
+            resolve(rating);
+          }else{
+            console.log(response.statusCode);
+          }
+        }
+      });
+    });
+  }
+
+  return await getSellerReputation();
+}
+
+exports.getDuplicatedSeller = function(allProductsList){
+	const unique = new Set();
+	const duplicatedSellers = new Set();
+	for(let i = 0; i < allProductsList.length; i++){
+			// let duplicate = allProductsList[i].some(element => {if(unique.size === unique.add(element.seller).size){return element.seller;}});
+			allProductsList[i].forEach(function(element){
+				if(unique.size === unique.add(element.seller).size){
+					duplicatedSellers.add(element.seller);
+				}
+			});
+	}
+
+	// for (const prop in data)
+	return duplicatedSellers;
+}
+
+function forlater(){
+	if(getSellerRating(product.seller, token)>chosenRating){
+	}
 }
