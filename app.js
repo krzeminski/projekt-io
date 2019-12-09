@@ -123,7 +123,7 @@ app.get("/result", async function(req,res){
   // console.log(engine.getDuplicatedSeller(allProductsList));
   console.log(duplicatedSellers);
   console.log(duplicatedSellersWithRating);
-
+  // forlater(allProductsList, duplicatedSellers);
   // res.sendFile(__dirname + "/views/results.html");
   res.render("result", {inputItemList: inputProductsList, cart:shoppingCart});
 });
