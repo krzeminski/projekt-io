@@ -3,7 +3,6 @@ const request = require('request');
 var superagent = require('superagent');
 var latinize = require('latinize');
 
-const chosenRating = 4;
 const limit = 50;
 const links = [];
 let phraseStart = "https://api.allegro.pl/offers/listing?phrase=";
@@ -38,7 +37,7 @@ exports.getAccessToken = async function(){
             accessToken = JSON.parse(response.body).access_token;
             resolve(accessToken);
           }else{
-            console.log(response.statusCode);
+            console.log("Problem with getting access token. HTTP response code: ", response.statusCode);
           }
         }
       });
@@ -120,7 +119,7 @@ exports.getOffersListing = async function(links, token, number){
 						simpleProductList.sort((a, b) => ((a.price + a.deliveryPrice) > (b.price + b.deliveryPrice)) ? 1 : -1);
 						resolve(simpleProductList);
 	        }else{
-	          console.log(response.statusCode);
+	          console.log("Problem with getting list of offers for one product. HTTP response code: ", response.statusCode);
 	        }
 	      }
 	    });
@@ -130,7 +129,7 @@ exports.getOffersListing = async function(links, token, number){
 	return await getOneOfferListing(number);
 }
 
-async function getSellerRating(sellerID, token){
+exports.getSellerRating = async function(sellerID, token){
 	var url = "https://api.allegro.pl/users/" + sellerID + "/ratings-summary";
   var options = {
     url: url,
@@ -151,7 +150,7 @@ async function getSellerRating(sellerID, token){
 						rating = rating.split(',').join('.') * 0.05 ;
             resolve(rating);
           }else{
-            console.log(response.statusCode);
+            console.log("Problem with getting seller's reputation. HTTP response code: ", response.statusCode);
           }
         }
       });
@@ -165,7 +164,6 @@ exports.getDuplicatedSeller = function(allProductsList){
 	const unique = new Set();
 	const duplicatedSellers = new Set();
 	for(let i = 0; i < allProductsList.length; i++){
-			// let duplicate = allProductsList[i].some(element => {if(unique.size === unique.add(element.seller).size){return element.seller;}});
 			allProductsList[i].forEach(function(element){
 				if(unique.size === unique.add(element.seller).size){
 					duplicatedSellers.add(element.seller);
@@ -173,11 +171,23 @@ exports.getDuplicatedSeller = function(allProductsList){
 			});
 	}
 
-	// for (const prop in data)
 	return duplicatedSellers;
 }
 
-function forlater(){
-	if(getSellerRating(product.seller, token)>chosenRating){
+
+exports.getSellersProducts = function(allProductsList, sellerListWithRating){
+
+	for(let i = 0; i < allProductsList.length; i++){
+		// Dla każdej oferty produktu
+		allProductsList[i].forEach(function(product){
+			// I dla każdego sprzedawcy z reputacją lepszą niż wybraną
+			sellerListWithRating.forEach(function(seller){
+				//sprawdź czy produkt został wystawiony przez sprzedawcę i dodaj go do tablicy produktów sprzedawcy
+				if(product.seller == seller.sellerID){
+					seller.products.push({flag: product.flag, id: product.id, price: product.price, deliveryPrice: product.deliveryPrice});
+				}
+			});
+		});
 	}
+
 }

@@ -11,6 +11,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 app.use(bodyParser.json());
 
+var chosenRating = 4.92;
 const inputProductsList = [{
   productName: "Iphone X",
   minPrice: 2000,
@@ -25,6 +26,7 @@ const inputProductsList = [{
 var linksList = [];
 const allProductsList = [];
 var accessToken;
+var theCheapest = {product:[]};
 var shoppingCart = [
  {
     sum: 1900,
@@ -40,13 +42,14 @@ var shoppingCart = [
             {name:"takich słuchawek jeszcze nie widziałeś!", price: 200, seller:"Huaweii", link:""},
             {name:"Podładuj do 100% z nową ładowarką", price: 100, seller:"Huaweii", link:""}]
   },
-  {
-    sum: 2000,
-    deliveryPrice: 100,
-    product:[{name:"Najlepszy Iphone na rynku !!1!!111!", price: 1200, seller:"apple", link:""},
-            {name:"Słuchawki do niego", price: 400, seller:"apple", link:""},
-            {name:"Ładowarka", price: 300, seller:"apple", link:""}]
-  }
+  theCheapest
+  // {
+  //   sum: 2000,
+  //   deliveryPrice: 100,
+  //   product:[{name:"Najlepszy Iphone na rynku !!1!!111!", price: 1200, seller:"apple", link:""},
+  //           {name:"Słuchawki do niego", price: 400, seller:"apple", link:""},
+  //           {name:"Ładowarka", price: 300, seller:"apple", link:""}]
+  // }
 ];
 
 //miejsce then opisane w 12 linijce engine.js
@@ -77,17 +80,49 @@ app.post("/", function(req,res){
 
 app.get("/result", async function(req,res){
   linksList = await engine.getLinks(inputProductsList);
-
+  //Pobieranie wszystkich potrzebnych produktów
   for(let i = 0; i<linksList.length; i++){
     var lista;
     lista = await engine.getOffersListing(linksList, accessToken, i);
-    // const unique = new Set();
+
     allProductsList.push(lista);
   }
 
+  for(let i = 0; i < allProductsList.length; i++){
+    var count = 0;
+    allProductsList[i].forEach(async function(product){
+      let sID = product.seller
+      let rating = await engine.getSellerRating(sID, accessToken);
+      if(rating>chosenRating){
+        theCheapest.product.push(lista[j]);
+        count++;
+      }if (count == 2) {continue;}
+    })
+  }
+
+  theCheapest.sum = 0;
+  theCheapest.deliveryPrice = 0;
+  theCheapest.product.forEach(function(product){
+    theCheapest.sum += (product.price + product.deliveryPrice);
+    theCheapest.deliveryPrice += product.deliveryPrice;
+  });
+//Wydzielanie możliwych wyjątków od najtańszych zestawów ze względu niwelacje ceny dostawy
+  //Tworzenie
+  var duplicatedSellersWithRating = [];
+  var duplicatedSellers = engine.getDuplicatedSeller(allProductsList);
+  var iterator = duplicatedSellers.values();
+  for(let i = 0; i < duplicatedSellers.size; i++){
+    let idFromSet = iterator.next().value;
+    let rating = await engine.getSellerRating(idFromSet, accessToken);
+    if (rating>chosenRating){
+      duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating, products:[]});
+    }
+  }
   // console.log(allProductsList);
   // console.log(typeof(allProductsList));
-  console.log(engine.getDuplicatedSeller(allProductsList));
+  // console.log(engine.getDuplicatedSeller(allProductsList));
+  console.log(duplicatedSellers);
+  console.log(duplicatedSellersWithRating);
 
   // res.sendFile(__dirname + "/views/results.html");
   res.render("result", {inputItemList: inputProductsList, cart:shoppingCart});
