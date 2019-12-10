@@ -87,24 +87,6 @@ app.get("/result", async function(req,res){
     allProductsList.push(lista);
   }
 
-  // for(let i = 0; i < allProductsList.length; i++){
-  //   var count = 0;
-  //   allProductsList[i].forEach(async function(product){
-  //     let sID = product.seller
-  //     let rating = await engine.getSellerRating(sID, accessToken);
-  //     if(rating>chosenRating){
-  //       theCheapest.product.push(lista[j]);
-  //       count++;
-  //     }if (count == 2) {continue;}
-  //   })
-  // }
-  //
-  // theCheapest.sum = 0;
-  // theCheapest.deliveryPrice = 0;
-  // theCheapest.product.forEach(function(product){
-  //   theCheapest.sum += (product.price + product.deliveryPrice);
-  //   theCheapest.deliveryPrice += product.deliveryPrice;
-  // });
 
 //Wydzielanie możliwych wyjątków od najtańszych zestawów ze względu niwelacje ceny dostawy
   //Tworzenie
@@ -119,18 +101,16 @@ app.get("/result", async function(req,res){
       duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating});
     }
   }
-  // console.log(allProductsList);
-  // console.log(typeof(allProductsList));
-  // console.log(engine.getDuplicatedSeller(allProductsList));
-  // console.log(duplicatedSellers);
-  // console.log(duplicatedSellersWithRating);
-  set1 = engine.forlater(allProductsList, duplicatedSellersWithRating);
-  set2 = engine.forlater(allProductsList, duplicatedSellersWithRating);
-  set3 = engine.forlater(allProductsList, duplicatedSellersWithRating);
+
+  set1 = engine.getBestOption(allProductsList, duplicatedSellersWithRating);
+  // for(let i = 0; i < allProductsList.length; i++){
+  //   allProductsList[i].splice(set1.product[i].id)
+  // }
+  set2 = engine.getBestOption(allProductsList, duplicatedSellersWithRating);
+  set3 = engine.getBestOption(allProductsList, duplicatedSellersWithRating);
 
   console.log(set3);
   var shoppingCart = [ set1, set2, set3];
-  // console.log(engine.forlater(allProductsList, duplicatedSellersWithRating));
   // res.sendFile(__dirname + "/views/results.html");
   res.render("result", {inputItemList: inputProductsList, cart:shoppingCart});
 });
