@@ -233,14 +233,11 @@ exports.getBestOption = function(lista, listaDUplikatow){
 				}
 			}
 			if(oneItemCost != 1000000000000  ){
-				 // console.log(lista[jj][kk]);
 				 if (productTable.indexOf(jj) != -1){
 					 productTable.splice(jj, 1);
 				 }
 				item = lista[jj][kk];
 				cost += oneItemCost;
-				// console.log(productTable[0]);
-				// console.log(cost);
 			}
 
 		}
@@ -249,14 +246,10 @@ exports.getBestOption = function(lista, listaDUplikatow){
 			var oneItemCost = 1000000000000;
 			for(let k=0; k < lista[productTable[m]].length; k++){
 				if(lista[productTable[m]][k].seller === listaDUplikatow[i].sellerID && lista[productTable[m]][k].price < oneItemCost){
-// console.log(tempDeliveryCost2);
 					oneItemCost = lista[productTable[m]][k].price;
-					// console.log(productTable[0]);
-					item = lista[productTable[m]][k];
 					qq = k;
 					mm = productTable[m];
 					checkItem ++;
-					// console.log(cost);
 
 				}
 			}if(oneItemCost != 1000000000000){
@@ -274,7 +267,6 @@ exports.getBestOption = function(lista, listaDUplikatow){
 			else{item2 = lista[productTable[m]][0];
 				tempDeliveryCost2 = lista[productTable[m]][0].deliveryPrice;
 			cost += lista[productTable[m]][0].price + lista[productTable[m]][0].deliveryPrice;
-			// console.log(lista[productTable[m]][1]);
 		}
 	}
 	cost += tempDeliveryCost + tempDeliveryCost2;
@@ -284,9 +276,7 @@ exports.getBestOption = function(lista, listaDUplikatow){
 		// console.log("jj ",jj, " mm ",mm);
 		set.splice(jj, 1, item);
 		set.splice(mm, 1, item2);
-// console.log(productTable[0]);
 	}
- // console.log(cost);
 }
 
 	cart.product = set;

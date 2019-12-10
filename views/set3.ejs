@@ -1,13 +1,13 @@
 <% let j = 2; %>
 <% for(let i = 0 ; i < cart[j].product.length ; i++){ %>
 <li class="list-group-item d-flex justify-content-between lh-condensed">
-  <a href="#<%=cart[j].product[i].id %>">
+  <a href="https://allegro.pl/oferta/<%=cart[j].product[i].id %>" target="_blank">
     <div>
       <h6 class="my-0"><%=cart[j].product[i].name %></h6>
-      <small class="text-muted"> <%=cart[j].product[i].seller %> </small>
+      <small class="text-muted">Sprzedawca: <%=cart[j].product[i].seller %> </small>
     </div>
   </a>
-  <span class="text-muted"><%=cart[j].product[i].price %> zł</span>
+  <span class="text-muted"><%=cart[j].product[i].price %>zł</span>
 </li>
 <%}%>
 

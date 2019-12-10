@@ -43,6 +43,10 @@ body{
   line-height: 1.2;
 }
 
+.text-muted{
+  text-align: right;
+}
+
 a{
   color: inherit;
   display: inline-block;

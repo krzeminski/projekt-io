@@ -11,7 +11,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 app.use(bodyParser.json());
 
-var chosenRating = 4.92;
+var chosenRating = 4.4;
 const inputProductsList = [{
   productName: "Iphone X",
   minPrice: 2000,
@@ -22,32 +22,19 @@ const inputProductsList = [{
   minPrice: 1000,
   maxPrice: 7000,
   state: "Nowe"
+}, {
+    productName: "Iphone 7",
+    minPrice: 1000,
+    maxPrice: 7000,
+    state: "Używane"
+}, {
+    productName: "Iphone 8",
+    minPrice: 1000,
+    maxPrice: 7000,
+    state: "Używane"
 }];
 
-//Do testowania
-// var shoppingCart = [
-//  {
-//     sum: 1900,
-//     deliveryPrice: 20,
-//     product:[{name:"Samsung Galaxy S10 Master Race", price: 1600, seller:"Samsung", link:""},
-//             {name:"Usłyszysz nawet ciszę", price: 200, seller:"Samsung", link:""},
-//             {name:"Nie zepsuj kabla!", price: 80, seller:"Samsung", link:""}]
-//   },
-//   {
-//     sum: 1950,
-//     deliveryPrice: 50,
-//     product:[{name:"Na co Ci iphone? Huaweii ftw", price: 1600, seller:"Huaweii", link:""},
-//             {name:"takich słuchawek jeszcze nie widziałeś!", price: 200, seller:"Huaweii", link:""},
-//             {name:"Podładuj do 100% z nową ładowarką", price: 100, seller:"Huaweii", link:""}]
-//   },
-//   {
-//     sum: 1950,
-//     deliveryPrice: 50,
-//     product:[{name:"Na co Ci iphone? Huaweii ftw", price: 1600, seller:"Huaweii", link:""},
-//             {name:"takich słuchawek jeszcze nie widziałeś!", price: 200, seller:"Huaweii", link:""},
-//             {name:"Podładuj do 100% z nową ładowarką", price: 100, seller:"Huaweii", link:""}]
-//   }
-// ];
+
 var linksList = [];
 const allProductsList = [];
 var accessToken;
@@ -83,31 +70,50 @@ app.get("/result", async function(req,res){
   for(let i = 0; i<linksList.length; i++){
     var lista;
     lista = await engine.getOffersListing(linksList, accessToken, i);
-
+    lista.forEach(async function(element){
+      let rating = await engine.getSellerRating(element.seller, accessToken);
+      if(rating < chosenRating){
+        let idx = lista.indexOf(element);
+        lista.splice(idx,1);
+      }
+    })
+    // for(let j = 0; j < lista.length; j++){    }
     allProductsList.push(lista);
   }
 
 
-//Wydzielanie możliwych wyjątków od najtańszych zestawów ze względu niwelacje ceny dostawy
-  //Tworzenie
-  var duplicatedSellersWithRating = [];
+//Pobieranie listy sprzedawców, którzy publikują więcej niż jedną ofertę
   var duplicatedSellers = engine.getDuplicatedSeller(allProductsList);
-  var iterator = duplicatedSellers.values();
-  for(let i = 0; i < duplicatedSellers.size; i++){
-    let idFromSet = iterator.next().value;
-    let rating = await engine.getSellerRating(idFromSet, accessToken);
-    if (rating>chosenRating){
-      // duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating, products:[]});
-      duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating});
-    }
-  }
-
-  set1 = engine.getBestOption(allProductsList, duplicatedSellersWithRating);
-  // for(let i = 0; i < allProductsList.length; i++){
-  //   allProductsList[i].splice(set1.product[i].id)
+  // var duplicatedSellersWithRating = [];
+  // var iterator = duplicatedSellers.values();
+  // for(let i = 0; i < duplicatedSellers.size; i++){
+  //   let idFromSet = iterator.next().value;
+  //   let rating = await engine.getSellerRating(idFromSet, accessToken);
+  //   if (rating>chosenRating){
+  //     // duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating, products:[]});
+  //     duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating});
+  //   }
   // }
-  set2 = engine.getBestOption(allProductsList, duplicatedSellersWithRating);
-  set3 = engine.getBestOption(allProductsList, duplicatedSellersWithRating);
+
+  set1 = engine.getBestOption(allProductsList, duplicatedSellers);
+  for(let i = 0; i < allProductsList.length; i++){
+    let idx = allProductsList[i].findIndex(function(element) {
+      if(element.id == set1.product[i].id){
+        return element;
+      }
+    });
+    allProductsList[i].splice(idx,1);
+  }
+  set2 = engine.getBestOption(allProductsList, duplicatedSellers);
+  for(let i = 0; i < allProductsList.length; i++){
+    let idx = allProductsList[i].findIndex(function(element) {
+      if(element.id == set2.product[i].id){
+        return element;
+      }
+    });
+    allProductsList[i].splice(idx,1);
+  }
+  set3 = engine.getBestOption(allProductsList, duplicatedSellers);
 
   console.log(set3);
   var shoppingCart = [ set1, set2, set3];
