@@ -116,7 +116,8 @@ exports.getOffersListing = async function(links, token, number){
 							}
 								simpleProductList.push(product);
 						}
-						simpleProductList.sort((a, b) => ((a.price + a.deliveryPrice) > (b.price + b.deliveryPrice)) ? 1 : -1);
+						simpleProductList.sort((a, b) => (a.price > b.price) ? 1 : -1);
+						// simpleProductList.sort((a, b) => ((a.price + a.deliveryPrice) > (b.price + b.deliveryPrice)) ? 1 : -1);
 						resolve(simpleProductList);
 	        }else{
 	          console.log("Problem with getting list of offers for one product. HTTP response code: ", response.statusCode);
@@ -190,4 +191,78 @@ exports.getSellersProducts = function(allProductsList, sellerListWithRating){
 		});
 	}
 
+}
+
+exports.forlater = function(lista, listaDUplikatow){
+	var tempDeliveryCost = 0;
+	var tempDeliveryCost2 = 0;
+	var cost = 0;
+	var savedCost = 0;
+	var sum = 0;
+	var delivery = 0;
+	var set = [];
+	var cart = {product:[], sum:0, deliveryPrice:0};
+	var item;
+
+	for(let i = 0; i < lista.length; i++){
+		sum += lista[i][1].price + lista[i][1].deliveryPrice;
+		delivery += lista[i][1].deliveryPrice;
+		set.push(lista[i][1]);
+	}
+
+	for(let i=0; i < listaDUplikatow.length; i++){
+		var productTable = [];
+		for(let q = 0; q < lista.length; q++){productTable.push(q);}
+		var checkItem = 0;
+		for(let j=0; j < lista.length; j++){
+			var oneItemCost = 1000000000000;
+			for(let k=0; k < lista[j].length; k++){
+				if(lista[j][k].seller === listaDUplikatow[i] && lista[j][k].price < oneItemCost){
+					tempDeliveryCost = Math.max(tempDeliveryCost, lista[j][k].deliveryPrice);
+					item = lista[j][k];
+					oneItemCost = lista[j][k].price;
+					if (productTable.isArray(j)){
+						productTable.splice(j, 1);
+					}
+				}
+			}
+			if(oneItemCost != 1000000000000){
+				cost += oneItemCost;
+				set.push(item);
+			}
+
+		}
+		for(let m=0; m < productTable.length; m++){
+			var oneItemCost = 1000000000000;
+			for(let k=0; k < lista[productTable[m]].length; k++){
+				if(lista[productTable[m]][k].seller === listaDUplikatow[i] && lista[productTable[m]][k].price < oneItemCost){
+					tempDeliveryCost2 = Math.max(tempDeliveryCost2, lista[productTable[m]][k].deliveryPrice);
+					oneItemCost = lista[productTable[m]][k].price;
+					checkItem ++;
+					if (productTable.isArray(i)){
+						productTable.splice(i, 1);
+					}
+				}
+			}if(oneItemCost != 1000000000000){
+				const previousItemCost = oneItemCost;
+				if(checkItem > 1){
+					cost += previousItemCost + oneItemCost;
+					set.push(lista[productTable[m]][k].name);
+				}
+			}else{
+				cost += lista[productTable[m]][1].price + lista[productTable[m]][1].deliveryPrice;
+			}
+		}
+		cost += tempDeliveryCost + tempDeliveryCost2;
+		if(cost < savedCost){
+			savedCost = cost;
+		}
+
+	}
+
+	cart.product = set;
+	cart.sum = sum;
+	cart.deliveryPrice = delivery;
+
+	return cart;
 }
