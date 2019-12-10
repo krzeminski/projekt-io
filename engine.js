@@ -207,20 +207,24 @@ exports.forlater = function(lista, listaDUplikatow){
 
 	for(let i = 0; i < lista.length; i++){
 		sum += lista[i][1].price + lista[i][1].deliveryPrice;
-		delivery += lista[i][1].deliveryPrice;
-		set.push(lista[i][1]);
+		delivery += lista[i][0].deliveryPrice;
+		set.push(lista[i][0]);
 	}
-
+//Dla każdego sprzedawcy
 	for(let i=0; i < listaDUplikatow.length; i++){
 		var productTable = [];
 		var cost = 0;
 		for(let q = 0; q < lista.length; q++){productTable.push(q);}
 		var checkItem = 0;
+		//Dla każdego produktu z listy od klienta
 		for(let j=0; j < lista.length; j++){
 			var oneItemCost = 1000000000000;
+			//Dla każdej oferty pobranej z Allegro dla danego produktu
 			for(let k=0; k < lista[j].length; k++){
+				//Jeśli oferta pochodzi od sprzedawcy, (który ma do sprzedaży inny produkt, który interesuje klienta)
+				//i jej koszt jest mniejszy od poprzedniej oferty
 				if(lista[j][k].seller === listaDUplikatow[i].sellerID && lista[j][k].price < oneItemCost){
-					tempDeliveryCost = Math.max(tempDeliveryCost, lista[j][k].deliveryPrice);
+					tempDeliveryCost = Math.max(tempDeliveryCost, lista[j][k].deliveryPrice);				//dodaj koszt poprzedniej oferty albo obecnej
 					kk = k;
 					jj = j;
 					oneItemCost = lista[j][k].price;
@@ -257,7 +261,7 @@ exports.forlater = function(lista, listaDUplikatow){
 				}
 			}
 			else{
-			cost += lista[productTable[m]][1].price + lista[productTable[m]][1].deliveryPrice;
+			cost += lista[productTable[m]][0].price + lista[productTable[m]][0].deliveryPrice;
 			// console.log(lista[productTable[m]][1]);
 		}
 	}
