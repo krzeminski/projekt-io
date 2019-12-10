@@ -1,7 +1,7 @@
 <% let j = 2; %>
 <% for(let i = 0 ; i < cart[j].product.length ; i++){ %>
 <li class="list-group-item d-flex justify-content-between lh-condensed">
-  <a href="#<%=cart[j].product[i].link %>">
+  <a href="#<%=cart[j].product[i].id %>">
     <div>
       <h6 class="my-0"><%=cart[j].product[i].name %></h6>
       <small class="text-muted"> <%=cart[j].product[i].seller %> </small>

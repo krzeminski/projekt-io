@@ -116,7 +116,8 @@ exports.getOffersListing = async function(links, token, number){
 							}
 								simpleProductList.push(product);
 						}
-						simpleProductList.sort((a, b) => ((a.price + a.deliveryPrice) > (b.price + b.deliveryPrice)) ? 1 : -1);
+						simpleProductList.sort((a, b) => (a.price > b.price) ? 1 : -1);
+						// simpleProductList.sort((a, b) => ((a.price + a.deliveryPrice) > (b.price + b.deliveryPrice)) ? 1 : -1);
 						resolve(simpleProductList);
 	        }else{
 	          console.log("Problem with getting list of offers for one product. HTTP response code: ", response.statusCode);
@@ -191,50 +192,103 @@ exports.getSellersProducts = function(allProductsList, sellerListWithRating){
 	}
 
 }
-function forlater(lista, listaDUplikatow){
+
+exports.forlater = function(lista, listaDUplikatow){
 	var tempDeliveryCost = 0;
 	var tempDeliveryCost2 = 0;
-	var cost;
-	var savedCost;
+	var savedCost = 0;
+	var sum = 0;
+	var delivery = 0;
+	var set = [];
+	var cart = {product:[], sum:0, deliveryPrice:0};
+	var item, item2;
+	var jj;
+	var kk;
+	var mm;
+	var qq;
 
 	for(let i = 0; i < lista.length; i++){
-		savedCost += lista[i][1].price + lista[i][1].deliveryPrice;
+		savedCost += (lista[i][0].price + lista[i][0].deliveryPrice);
+		delivery += lista[i][0].deliveryPrice;
+		set.push(lista[i][0]);
 	}
 
 	for(let i=0; i < listaDUplikatow.length; i++){
-		var productTable = [0,1,2,3,4];
+		var productTable = [];
+		var cost = 0;
+		for(let q = 0; q < lista.length; q++){productTable.push(q);}
+		var checkItem = 0;
 		for(let j=0; j < lista.length; j++){
 			var oneItemCost = 1000000000000;
-			for(let k=0; k < lista[i].length; k++){
-				if(lista[j][k].seller === listaDUplikatow[i] && lista[j][k].price < oneItemCost){
+			for(let k=0; k < lista[j].length; k++){
+				if(lista[j][k].seller === listaDUplikatow[i].sellerID && lista[j][k].price < oneItemCost){
 					tempDeliveryCost = Math.max(tempDeliveryCost, lista[j][k].deliveryPrice);
-					cost += lista[j][k].price;
+					kk = k;
+					jj = j;
 					oneItemCost = lista[j][k].price;
-					if (productTable.isArray(j)){
-						productTable.splice(j, 1);
-					}
+
 				}
-			}if(oneItemCost != 1000000000000)
-			cost += lista[j][k].price;
+			}
+			if(oneItemCost != 1000000000000  ){
+				 // console.log(lista[jj][kk]);
+				 if (productTable.indexOf(jj) != -1){
+					 productTable.splice(jj, 1);
+				 }
+				item = lista[jj][kk];
+				cost += oneItemCost;
+				// console.log(productTable[0]);
+				// console.log(cost);
+			}
+
 		}
 		for(let m=0; m < productTable.length; m++){
+
 			var oneItemCost = 1000000000000;
-			for(let k=0; k < lista[i].length; k++){
-				if(lista[j][k].seller === listaDUplikatow[i] && lista[m][k].price < oneItemCost){
-					tempDeliveryCost2 = Math.max(tempDeliveryCost2, lista[m][k].deliveryPrice);
-					oneItemCost = lista[m][k].price;
-					if (productTable.isArray(i)){
-						productTable.splice(i, 1);
-					}
+			for(let k=0; k < lista[productTable[m]].length; k++){
+				if(lista[productTable[m]][k].seller === listaDUplikatow[i].sellerID && lista[productTable[m]][k].price < oneItemCost){
+// console.log(tempDeliveryCost2);
+					oneItemCost = lista[productTable[m]][k].price;
+					// console.log(productTable[0]);
+					item = lista[productTable[m]][k];
+					qq = k;
+					mm = productTable[m];
+					checkItem ++;
+					// console.log(cost);
+
 				}
 			}if(oneItemCost != 1000000000000){
-				cost += lista[m][k].price + lita[m][k].deliveryPrice;
+				tempDeliveryCost2 = Math.max(tempDeliveryCost2, lista[mm][qq].deliveryPrice);
+
+				if (productTable.indexOf(mm)!=-1){
+					productTable.splice(mm, 1);
+				}
+				item2 = lista[mm][qq];
+				const previousItemCost = oneItemCost;
+				if(checkItem > 1){
+					cost += previousItemCost + oneItemCost;
+				}
 			}
-		}
-		cost += tempDeliveryCost + tempDeliveryCost2;
-		if(cost < savedCost){
-			savedCost = cost;
+			else{item2 = lista[productTable[m]][0];
+				tempDeliveryCost2 = lista[productTable[m]][0].deliveryPrice;
+			cost += lista[productTable[m]][0].price + lista[productTable[m]][0].deliveryPrice;
+			// console.log(lista[productTable[m]][1]);
 		}
 	}
-	return savedCost;
+	cost += tempDeliveryCost + tempDeliveryCost2;
+	delivery = tempDeliveryCost + tempDeliveryCost2;
+	if(cost < savedCost){
+		savedCost = cost;
+		// console.log("jj ",jj, " mm ",mm);
+		set.splice(jj, 1, item);
+		set.splice(mm, 1, item2);
+// console.log(productTable[0]);
+	}
+ // console.log(cost);
+}
+
+	cart.product = set;
+	cart.sum = savedCost;
+	cart.deliveryPrice = delivery;
+
+	return cart;
 }
