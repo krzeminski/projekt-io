@@ -119,12 +119,20 @@ app.get("/result", async function(req,res){
       duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating});
     }
   }
-  // console.log(allProductsList);
+  // console.log(allProductsList[0][0]);
+  // console.log(allProductsList[0][1]);
+  // console.log(allProductsList[0][2]);
+  // console.log(allProductsList[0][3]);
+  // console.log(allProductsList[0][4]);
+
   // console.log(typeof(allProductsList));
   // console.log(engine.getDuplicatedSeller(allProductsList));
   // console.log(duplicatedSellers);
   // console.log(duplicatedSellersWithRating);
   set1 = engine.forlater(allProductsList, duplicatedSellersWithRating);
+  // for(let i = 0; i < allProductsList.length; i++){
+  //   allProductsList[i].splice(set1.product[i].id)
+  // }
   set2 = engine.forlater(allProductsList, duplicatedSellersWithRating);
   set3 = engine.forlater(allProductsList, duplicatedSellersWithRating);
 
