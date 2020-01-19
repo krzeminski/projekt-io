@@ -34,7 +34,7 @@ const inputProductsList = [{
     state: "Używane"
 }];
 
-
+const LIMIT_OF_PRODUCTS = 5;
 var linksList = [];
 const allProductsList = [];
 var accessToken;
@@ -57,8 +57,11 @@ app.post("/", function(req,res){
     maxPrice:req.body.maxPrice,
     state:req.body.state
   }
-
-  inputProductsList.push(searchedProduct);
+  if(inputProductsList.length < LIMIT_OF_PRODUCTS){
+    inputProductsList.push(searchedProduct);
+  }else{
+    console.log("Za dużo produktów");
+  }
   res.redirect("/");
 
 });
