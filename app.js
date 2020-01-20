@@ -12,7 +12,8 @@ app.use(express.static("public"));
 app.use(bodyParser.json());
 
 var chosenRating = 4.4;
-const inputProductsList = [{
+
+const startingList = [{
   productName: "Iphone X",
   minPrice: 2000,
   maxPrice: 7000,
@@ -33,6 +34,10 @@ const inputProductsList = [{
     maxPrice: 7000,
     state: "Używane"
 }];
+
+let inputProductsList = [];
+
+// inputProductsList = startingList.slice();
 
 const LIMIT_OF_PRODUCTS = 5;
 var linksList = [];
