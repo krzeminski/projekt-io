@@ -12,8 +12,7 @@ body{
 }
 
 .add-btn{
-  border-top-left-radius: 0;
-  border-bottom-left-radius: 0;
+  margin: auto;
 }
 
 .subheader{
@@ -50,4 +49,12 @@ body{
 a{
   color: inherit;
   display: inline-block;
+}
+
+.ftw{
+  position: relative;
+  -ms-flex: 1 1 auto;
+  flex: 1 1 auto;
+  width: 1%;
+  margin-bottom: 0;  
 }

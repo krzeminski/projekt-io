@@ -2,7 +2,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
-const engine = require(__dirname + "/engine.js");    //module
+const engine = require(__dirname + "/engine.js");
 
 const app = express();
 
@@ -11,8 +11,7 @@ app.use(bodyParser.urlencoded({extended: true}));
 app.use(express.static("public"));
 app.use(bodyParser.json());
 
-var chosenRating = 4.4;
-
+//przykład do testowania
 const startingList = [{
   productName: "Iphone X",
   minPrice: 2000,
@@ -36,9 +35,7 @@ const startingList = [{
 }];
 
 let inputProductsList = [];
-
 // inputProductsList = startingList.slice();
-
 const LIMIT_OF_PRODUCTS = 5;
 var linksList = [];
 const allProductsList = [];
@@ -47,20 +44,22 @@ var set1, set2, set3 = {product:[]};
 var theCheapest = {product:[]};
 
 
-//miejsce then opisane w 12 linijce engine.js
+//Wywołanie pobierania tokenu dostępu
 engine.getAccessToken().then(function(res){accessToken=res;});
 
-
+//wywołanie strony głównej
 app.get("/", async function(req,res){
   res.render("search",{searchedItemsList:inputProductsList});
 });
 
+//dodawanie przedmiotów do listy
 app.post("/", function(req,res){
   const searchedProduct = {
     productName:req.body.productName,
     minPrice:req.body.minPrice,
     maxPrice:req.body.maxPrice,
-    state:req.body.state
+    state:req.body.state,
+    reputation:req.body.reputation
   }
   if(inputProductsList.length < LIMIT_OF_PRODUCTS){
     inputProductsList.push(searchedProduct);
@@ -71,16 +70,17 @@ app.post("/", function(req,res){
 
 });
 
-
+//Wysłanie zapytania
 app.get("/result", async function(req,res){
   linksList = await engine.getLinks(inputProductsList);
   //Pobieranie wszystkich potrzebnych produktów
   for(let i = 0; i<linksList.length; i++){
     var lista;
     lista = await engine.getOffersListing(linksList, accessToken, i);
+    //sprawdzanie reputacji sprzedawców
     lista.forEach(async function(element){
       let rating = await engine.getSellerRating(element.seller, accessToken);
-      if(rating < chosenRating){
+      if(rating < inputProductsList[i].reputation){
         let idx = lista.indexOf(element);
         lista.splice(idx,1);
       }
@@ -92,6 +92,7 @@ app.get("/result", async function(req,res){
 
 //Pobieranie listy sprzedawców, którzy publikują więcej niż jedną ofertę
   var duplicatedSellers = engine.getDuplicatedSeller(allProductsList);
+
   // var duplicatedSellersWithRating = [];
   // var iterator = duplicatedSellers.values();
   // for(let i = 0; i < duplicatedSellers.size; i++){
@@ -103,7 +104,10 @@ app.get("/result", async function(req,res){
   //   }
   // }
 
+//Tworzenie zestawień
+
   set1 = engine.getBestOption(allProductsList, duplicatedSellers);
+
   for(let i = 0; i < allProductsList.length; i++){
     let idx = allProductsList[i].findIndex(function(element) {
       if(element.id == set1.product[i].id){
@@ -112,7 +116,10 @@ app.get("/result", async function(req,res){
     });
     allProductsList[i].splice(idx,1);
   }
+
+
   set2 = engine.getBestOption(allProductsList, duplicatedSellers);
+
   for(let i = 0; i < allProductsList.length; i++){
     let idx = allProductsList[i].findIndex(function(element) {
       if(element.id == set2.product[i].id){
@@ -121,12 +128,14 @@ app.get("/result", async function(req,res){
     });
     allProductsList[i].splice(idx,1);
   }
+
+
   set3 = engine.getBestOption(allProductsList, duplicatedSellers);
 
-  console.log(set3);
+  //Wysyłanie zestawień do wyświetleń
   var shoppingCart = [ set1, set2, set3];
-  // res.sendFile(__dirname + "/views/results.html");
   res.render("result", {inputItemList: inputProductsList, cart:shoppingCart});
+
 });
 
 app.listen(3000, function(){

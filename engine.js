@@ -24,7 +24,7 @@ exports.getAccessToken = async function(){
     }
   };
 
-//funkcja generujaca token, ktory jest promise
+//funkcja generujaca token, ktory jest obietnicą (promise)
 //musielismy to napisac w ten sposob, bo wystepowal problem opisany w linku nizej
 //https://stackoverflow.com/questions/14220321/how-do-i-return-the-response-from-an-asynchronous-call
   function getToken(){
@@ -57,7 +57,7 @@ exports.getLinks = function(searchedProductsList){
 	var stateFilter;
   for(let i = 0; i < searchedProductsList.length; i++){
     if(searchedProductsList[i].minPrice>searchedProductsList[i].maxPrice){
-      searchedProductsList[i].maxPrice=searchedProductsList[i].minPrice;
+      searchedProductsList[i].maxPrice=searchedProductsList[i].minPrice*1.1;
     }
 		if(searchedProductsList.state == "Nowe"){
 			stateFilter="&11323=1";
@@ -67,7 +67,8 @@ exports.getLinks = function(searchedProductsList){
 			stateFilter="";
 		}
     links.push(
-      phraseStart + latinize(searchedProductsList[i].productName).trim().split(' ').join('+') +
+      // phraseStart + latinize(searchedProductsList[i].productName).trim().split(' ').join('+') +
+      phraseStart + (searchedProductsList[i].productName).trim().split(' ').join('+') +
       "&price.from=" + searchedProductsList[i].minPrice +
       "&price.to=" + searchedProductsList[i].maxPrice +
       phraseEnd + stateFilter
@@ -101,8 +102,10 @@ exports.getOffersListing = async function(links, token, number){
 	        if(response.statusCode === 200){
 	          var simpleProductList = [];
 						var listOfOffersForOneProduct = [];
-						listOfOffersForOneProduct = JSON.parse(response.body).items.promoted;
-	          listOfOffersForOneProduct.concat(JSON.parse(response.body).items.regular);
+						var listOfPromotedOffersForOneProduct = [];
+						listOfPromotedOffersForOneProduct = JSON.parse(response.body).items.promoted;
+	          listOfOffersForOneProduct = listOfPromotedOffersForOneProduct.concat(JSON.parse(response.body).items.regular);
+						// console.log(listOfOffersForOneProduct);
 
 						for(let i = 0; i<listOfOffersForOneProduct.length; i++){
 							var product = {
@@ -116,8 +119,8 @@ exports.getOffersListing = async function(links, token, number){
 							}
 								simpleProductList.push(product);
 						}
-						simpleProductList.sort((a, b) => (a.price > b.price) ? 1 : -1);
-						// simpleProductList.sort((a, b) => ((a.price + a.deliveryPrice) > (b.price + b.deliveryPrice)) ? 1 : -1);
+						// simpleProductList.sort((a, b) => (a.price > b.price) ? 1 : -1);
+						simpleProductList.sort((a, b) => ((a.price + a.deliveryPrice) > (b.price + b.deliveryPrice)) ? 1 : -1);
 						resolve(simpleProductList);
 	        }else{
 	          console.log("Problem with getting list of offers for one product. HTTP response code: ", response.statusCode);
@@ -205,12 +208,30 @@ exports.getBestOption = function(lista, listaDUplikatow){
 	var kk;
 	var mm;
 	var qq;
+	const emptyOffer = {
+		id: 0,
+		name: "Nie znaleziono oferty",
+		seller: 0,
+		price: 0,
+		deliveryPrice: 0
+	}
 
-	// for(let i = 0; i < lista.length; i++){
-	// 	savedCost += (lista[i][0].price + lista[i][0].deliveryPrice);
-	// 	delivery += lista[i][0].deliveryPrice;
-	// 	set.push(lista[i][0]);
-	// }
+if(lista.length == 0){
+	savedCost = 0;
+	delivery = 0;
+	set.push(emptyOffer);
+}else{
+	for(let i = 0; i < lista.length; i++){
+		if(lista[i].length == 0){
+			set.push(emptyOffer);
+		}else{
+			savedCost += (lista[i][0].price + lista[i][0].deliveryPrice);
+			delivery += lista[i][0].deliveryPrice;
+			set.push(lista[i][0]);
+		}
+	}
+}
+
 //Dla każdego sprzedawcy
 	for(let i=0; i < listaDUplikatow.length; i++){
 		var productTable = [];
@@ -241,7 +262,7 @@ exports.getBestOption = function(lista, listaDUplikatow){
 				cost += oneItemCost;
 				if(set2[jj].price > oneItemCost){
 					set2.splice(jj, 1, item);
-					console.log("dupa");
+					console.log("nie działa");
 				}
 			}
 
@@ -256,7 +277,7 @@ exports.getBestOption = function(lista, listaDUplikatow){
 					mm = productTable[m];
 					checkItem ++;
 				}
-				
+
 			}if(oneItemCost != 1000000000000){
 				tempDeliveryCost2 = Math.max(tempDeliveryCost2, lista[mm][qq].deliveryPrice);
 
@@ -289,8 +310,8 @@ exports.getBestOption = function(lista, listaDUplikatow){
 }
 
 	cart.product = set;
-	cart.sum = savedCost;
-	cart.deliveryPrice = delivery;
+	cart.sum = Math.ceil(savedCost*100)/100;
+	cart.deliveryPrice = Math.ceil(delivery*100)/100;
 
 	return cart;
 }

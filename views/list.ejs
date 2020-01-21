@@ -1,14 +1,19 @@
+<% let a = "";%>
 <% for(let i = 0 ; i < searchedItemsList.length ; i++){ %>
+<% if (searchedItemsList[i].state == null ){a = "Wszystkie";}else {a = searchedItemsList[i].state} %>
+
 <li class="list-group-item">
   <div class="purchase-list">
     <h6 class="my-0">  <%=searchedItemsList[i].productName %></h6>
-    <small class="text-muted">  Ilość sztuk: <%= searchedItemsList[i].quantity %>,
+    <small class="text-muted">
       Cena minimalna: <%=searchedItemsList[i].minPrice %>,
       Cena maksymalna: <%=searchedItemsList[i].maxPrice %>,
-      Stan: <%=searchedItemsList[i].state %>. </small>
+      Reputacja sprzedającego: <%= searchedItemsList[i].reputation %>,
+      Stan: <%= a %>.
+       </small>
   </div>
   <div class="purchase-list-btn">
-    <button type="button" name="button" class="btn btn-outline-secondary btn-sm">usuń</button>
+    <button type="button" name="button" class="btn btn-outline-secondary btn-sm" title="Nie działa">usuń</button>
   </div>
 </li>
 <% } %>
