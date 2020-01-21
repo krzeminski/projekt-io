@@ -67,8 +67,8 @@ exports.getLinks = function(searchedProductsList){
 			stateFilter="";
 		}
     links.push(
-      // phraseStart + latinize(searchedProductsList[i].productName).trim().split(' ').join('+') +
-      phraseStart + (searchedProductsList[i].productName).trim().split(' ').join('+') +
+      phraseStart + latinize(searchedProductsList[i].productName).trim().split(' ').join('+') +
+      // phraseStart + (searchedProductsList[i].productName).trim().split(' ').join('+') +
       "&price.from=" + searchedProductsList[i].minPrice +
       "&price.to=" + searchedProductsList[i].maxPrice +
       phraseEnd + stateFilter

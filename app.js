@@ -35,7 +35,7 @@ const startingList = [{
 }];
 
 let inputProductsList = [];
-// inputProductsList = startingList.slice();
+// inputProductsList = startingList.slice();      //odkomentować podczas testu
 const LIMIT_OF_PRODUCTS = 5;
 var linksList = [];
 const allProductsList = [];
@@ -72,7 +72,9 @@ app.post("/", function(req,res){
 
 //Wysłanie zapytania
 app.get("/result", async function(req,res){
+  //Tworzenie linków
   linksList = await engine.getLinks(inputProductsList);
+
   //Pobieranie wszystkich potrzebnych produktów
   for(let i = 0; i<linksList.length; i++){
     var lista;
@@ -85,27 +87,13 @@ app.get("/result", async function(req,res){
         lista.splice(idx,1);
       }
     })
-    // for(let j = 0; j < lista.length; j++){    }
     allProductsList.push(lista);
   }
 
-
-//Pobieranie listy sprzedawców, którzy publikują więcej niż jedną ofertę
+  //Pobieranie listy sprzedawców, którzy publikują więcej niż jedną ofertę
   var duplicatedSellers = engine.getDuplicatedSeller(allProductsList);
 
-  // var duplicatedSellersWithRating = [];
-  // var iterator = duplicatedSellers.values();
-  // for(let i = 0; i < duplicatedSellers.size; i++){
-  //   let idFromSet = iterator.next().value;
-  //   let rating = await engine.getSellerRating(idFromSet, accessToken);
-  //   if (rating>chosenRating){
-  //     // duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating, products:[]});
-  //     duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating});
-  //   }
-  // }
-
-//Tworzenie zestawień
-
+  //Tworzenie zestawień
   set1 = engine.getBestOption(allProductsList, duplicatedSellers);
 
   for(let i = 0; i < allProductsList.length; i++){
@@ -129,7 +117,6 @@ app.get("/result", async function(req,res){
     allProductsList[i].splice(idx,1);
   }
 
-
   set3 = engine.getBestOption(allProductsList, duplicatedSellers);
 
   //Wysyłanie zestawień do wyświetleń
@@ -141,3 +128,23 @@ app.get("/result", async function(req,res){
 app.listen(3000, function(){
   console.log("Server started on port 3000...........................................................................................................................");
 });
+
+
+
+
+
+
+
+
+
+
+// var duplicatedSellersWithRating = [];
+// var iterator = duplicatedSellers.values();
+// for(let i = 0; i < duplicatedSellers.size; i++){
+//   let idFromSet = iterator.next().value;
+//   let rating = await engine.getSellerRating(idFromSet, accessToken);
+//   if (rating>chosenRating){
+//     // duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating, products:[]});
+//     duplicatedSellersWithRating.push({sellerID: idFromSet, rating: rating});
+//   }
+// }
